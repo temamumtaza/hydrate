@@ -37,15 +37,16 @@ struct SettingsView: View {
     
     var body: some View {
         ZStack {
-            // Main background
-            backgroundColor.edgesIgnoringSafeArea(.all)
+            // Main background - keep this to fill the entire sheet
+            secondaryColor.edgesIgnoringSafeArea(.all)
             
+            // Main content
             VStack(spacing: 20) {
                 Text("Settings")
                     .font(.title2)
                     .bold()
                     .foregroundColor(textColor)
-                    .padding(.top)
+                    .padding(.top, 10)
                 
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 10) {
@@ -157,12 +158,10 @@ struct SettingsView: View {
                     }
                     .buttonStyle(ConsistentButtonStyle(color: accentColor))
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.bottom, 10)
             }
-            .padding()
-            .background(secondaryColor)
-            .cornerRadius(12)
-            .frame(width: 300, height: 400) // Match PopoverView dimensions
+            .frame(width: 300)
             .alert("Notification Permission Required", isPresented: $showNotificationAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Settings") {
