@@ -11,6 +11,7 @@ class HydrationManager: ObservableObject {
     @Published var isNotificationAuthorized: Bool = false // Track notification authorization
     
     private var timer: Timer?
+    private var uiUpdateTimer: Timer? // New timer for UI updates
     private let userDefaults = UserDefaults.standard
     private let remainingKey = "remainingTarget"
     private let goalKey = "dailyGoal"
@@ -24,8 +25,14 @@ class HydrationManager: ObservableObject {
         loadData()
         setupNotifications()
         startTimer()
+        startUIUpdateTimer() // Start separate timer for UI updates
         checkForDailyReset()
         updateNextReminderTime()
+    }
+    
+    deinit {
+        timer?.invalidate()
+        uiUpdateTimer?.invalidate()
     }
     
     func loadData() {
@@ -135,20 +142,29 @@ class HydrationManager: ObservableObject {
     
     private func updateNextReminderTime() {
         nextReminderTime = Date().addingTimeInterval(reminderInterval)
+        
+        // Force UI update
+        objectWillChange.send()
     }
     
     func triggerNotification() {
         // Make sure we have permission before trying to send a notification
         if isNotificationAuthorized {
-            sendNotification()
-            updateNextReminderTime()
+            // Clear any pending notifications first
+            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+            
+            // Send the notification immediately
+            DispatchQueue.main.async { [weak self] in
+                self?.sendNotification(immediate: true)
+                self?.updateNextReminderTime()
+            }
         } else {
             // Request permission if not authorized
             setupNotifications()
         }
     }
     
-    private func sendNotification() {
+    private func sendNotification(immediate: Bool = false) {
         let content = UNMutableNotificationContent()
         
         // Array of friendly reminder messages
@@ -170,16 +186,20 @@ class HydrationManager: ObservableObject {
         // Add a blue color hint to the notification (will be used on platforms that support it)
         content.categoryIdentifier = "hydration_reminder"
         
-        // Create a trigger that delivers the notification immediately
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        // Create a trigger that delivers the notification immediately or with a 1 second delay
+        let timeInterval = immediate ? 0.1 : 1.0
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: timeInterval, repeats: false)
         
-        // Create the request
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        // Create the request with a unique identifier
+        let identifier = immediate ? "test-notification-\(UUID().uuidString)" : UUID().uuidString
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         
         // Add the notification request
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Error sending notification: \(error.localizedDescription)")
+            } else {
+                print("Notification scheduled successfully")
             }
         }
     }
@@ -192,13 +212,17 @@ class HydrationManager: ObservableObject {
         content.categoryIdentifier = "hydration_celebration"
         
         // Create a trigger that delivers the notification immediately
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
         
         // Create the request
         let request = UNNotificationRequest(identifier: "celebration-\(UUID().uuidString)", content: content, trigger: trigger)
         
         // Add the notification request
-        UNUserNotificationCenter.current().add(request)
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Error sending celebration notification: \(error.localizedDescription)")
+            }
+        }
     }
     
     private func startTimer() {
@@ -218,7 +242,24 @@ class HydrationManager: ObservableObject {
         
         // Make sure the timer runs even if the app is in the background
         if let timer = timer {
-            RunLoop.current.add(timer, forMode: .common)
+            RunLoop.main.add(timer, forMode: .common)
+        }
+    }
+    
+    // New method to start a UI update timer that runs more frequently
+    private func startUIUpdateTimer() {
+        uiUpdateTimer?.invalidate()
+        
+        // Create a timer that updates the UI every second
+        uiUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            
+            // Force UI update to refresh the countdown
+            self.objectWillChange.send()
+        }
+        
+        if let uiUpdateTimer = uiUpdateTimer {
+            RunLoop.main.add(uiUpdateTimer, forMode: .common)
         }
     }
     
@@ -240,7 +281,7 @@ class HydrationManager: ObservableObject {
     
     // Format time remaining until next reminder
     func formattedTimeRemaining() -> String {
-        let timeRemaining = nextReminderTime.timeIntervalSince(Date())
+        let timeRemaining = max(0, nextReminderTime.timeIntervalSince(Date()))
         
         if timeRemaining <= 0 {
             return "now"
