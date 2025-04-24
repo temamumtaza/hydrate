@@ -63,10 +63,15 @@ class HydrationManager: ObservableObject {
         remainingTarget = max(0, remainingTarget - amount)
         saveData()
         
+        // Log the internal operation
+        let newRemaining = remainingTarget
+        print("[SYSTEM] Water intake recorded: \(Int(amount))ml. Remaining: \(Int(newRemaining))ml")
+        
         // Check if the goal was just reached (previous > 0 and now == 0)
         if previousRemaining > 0 && remainingTarget == 0 {
             // Trigger celebration!
             showCelebration = true
+            print("[SYSTEM] Goal achieved! Celebration triggered.")
             
             // Send a celebration notification
             sendCelebrationNotification()
@@ -79,6 +84,7 @@ class HydrationManager: ObservableObject {
         showCelebration = false
         saveData()
         userDefaults.set(Date(), forKey: lastResetDateKey)
+        print("[SYSTEM] Target reset to \(Int(dailyGoal))ml")
     }
     
     func checkForDailyReset() {
@@ -97,6 +103,8 @@ class HydrationManager: ObservableObject {
         // Calculate how much water has been consumed so far
         let consumed = dailyGoal - remainingTarget
         
+        print("[SYSTEM] Updating daily goal from \(Int(dailyGoal))ml to \(Int(newGoal))ml")
+        
         // Update the goal
         dailyGoal = newGoal
         
@@ -110,10 +118,12 @@ class HydrationManager: ObservableObject {
             showCelebration = true
         }
         
+        print("[SYSTEM] New remaining target: \(Int(remainingTarget))ml")
         saveData()
     }
     
     func updateReminderInterval(to newInterval: TimeInterval) {
+        print("[SYSTEM] Updating reminder interval from \(Int(reminderInterval/60))min to \(Int(newInterval/60))min")
         reminderInterval = newInterval
         saveData()
         restartTimer()
@@ -194,12 +204,14 @@ class HydrationManager: ObservableObject {
         let identifier = immediate ? "test-notification-\(UUID().uuidString)" : UUID().uuidString
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         
+        print("[SYSTEM] Sending \(immediate ? "test" : "scheduled") notification")
+        
         // Add the notification request
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("Error sending notification: \(error.localizedDescription)")
+                print("[ERROR] Error sending notification: \(error.localizedDescription)")
             } else {
-                print("Notification scheduled successfully")
+                print("[SYSTEM] Notification scheduled successfully")
             }
         }
     }
@@ -295,5 +307,12 @@ class HydrationManager: ObservableObject {
         } else {
             return "\(seconds)s"
         }
+    }
+    
+    // Logger function for user interactions
+    func logUserAction(action: String, details: String = "") {
+        let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
+        let logMessage = "[\(timestamp)] USER ACTION: \(action)\(details.isEmpty ? "" : " - \(details)")"
+        print(logMessage)
     }
 } 

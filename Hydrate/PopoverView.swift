@@ -51,6 +51,7 @@ struct PopoverView: View {
                     
                     HStack(spacing: 12) {
                         Button(action: {
+                            hydrationManager.logUserAction(action: "Add Water", details: "100ml")
                             addWater(amount: 100)
                         }) {
                             Text("100ml")
@@ -60,6 +61,7 @@ struct PopoverView: View {
                         .disabled(isAddingWater)
                         
                         Button(action: {
+                            hydrationManager.logUserAction(action: "Add Water", details: "250ml")
                             addWater(amount: 250)
                         }) {
                             Text("250ml")
@@ -69,6 +71,7 @@ struct PopoverView: View {
                         .disabled(isAddingWater)
                         
                         Button(action: {
+                            hydrationManager.logUserAction(action: "Add Water", details: "500ml")
                             addWater(amount: 500)
                         }) {
                             Text("500ml")
@@ -83,8 +86,12 @@ struct PopoverView: View {
                         Slider(value: $intakeAmount, in: 50...1000, step: 50)
                             .accentColor(accentColor)
                             .frame(width: 150)
+                            .onChange(of: intakeAmount) { newValue in
+                                hydrationManager.logUserAction(action: "Adjust Slider", details: "\(Int(newValue))ml")
+                            }
                         
                         Button(action: {
+                            hydrationManager.logUserAction(action: "Add Water", details: "\(Int(intakeAmount))ml")
                             addWater(amount: intakeAmount)
                         }) {
                             HStack(spacing: 0) {
@@ -126,6 +133,7 @@ struct PopoverView: View {
                 // Bottom buttons
                 HStack {
                     Button(action: {
+                        hydrationManager.logUserAction(action: "Reset Target")
                         hydrationManager.resetTarget()
                     }) {
                         HStack {
@@ -138,6 +146,7 @@ struct PopoverView: View {
                     Spacer()
                     
                     Button(action: {
+                        hydrationManager.logUserAction(action: "Open Settings")
                         showSettings.toggle()
                     }) {
                         HStack {
@@ -188,6 +197,7 @@ struct PopoverView: View {
                         .padding(.horizontal)
                     
                     Button("Continue") {
+                        hydrationManager.logUserAction(action: "Dismiss Celebration")
                         hydrationManager.showCelebration = false
                     }
                     .buttonStyle(ConsistentButtonStyle(color: accentColor))

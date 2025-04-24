@@ -57,6 +57,9 @@ struct SettingsView: View {
                         HStack {
                             Slider(value: $dailyGoal, in: 500...5000, step: 100)
                                 .accentColor(accentColor)
+                                .onChange(of: dailyGoal) { newValue in
+                                    hydrationManager.logUserAction(action: "Adjust Daily Goal", details: "\(Int(newValue))ml")
+                                }
                             HStack(spacing: 0) {
                                 Text("\(Int(dailyGoal))")
                                     .foregroundColor(textColor)
@@ -88,6 +91,9 @@ struct SettingsView: View {
                         .pickerStyle(MenuPickerStyle())
                         .labelsHidden()
                         .accentColor(accentColor)
+                        .onChange(of: reminderInterval) { newValue in
+                            hydrationManager.logUserAction(action: "Change Reminder Interval", details: reminderIntervals[newValue] ?? "\(Int(newValue)) min")
+                        }
                         
                         // Display next reminder time
                         HStack {
@@ -112,6 +118,7 @@ struct SettingsView: View {
                     // Test notification button
                     HStack {
                         Button("Test Notification") {
+                            hydrationManager.logUserAction(action: "Test Notification")
                             if hydrationManager.isNotificationAuthorized {
                                 hydrationManager.triggerNotification()
                             } else {
@@ -135,6 +142,7 @@ struct SettingsView: View {
                 // Add all buttons in one row
                 HStack {
                     Button("Cancel") {
+                        hydrationManager.logUserAction(action: "Cancel Settings")
                         presentationMode.wrappedValue.dismiss()
                     }
                     .buttonStyle(ConsistentButtonStyle(color: accentColor, isOutlined: true))
@@ -143,6 +151,7 @@ struct SettingsView: View {
                     
                     // Quit button in the middle
                     Button("Quit App") {
+                        hydrationManager.logUserAction(action: "Quit App")
                         // Using a more direct method to quit the app even in debug mode
                         exit(0)
                     }
@@ -151,6 +160,7 @@ struct SettingsView: View {
                     Spacer()
                     
                     Button("Save") {
+                        hydrationManager.logUserAction(action: "Save Settings", details: "Goal: \(Int(dailyGoal))ml, Interval: \(reminderIntervals[reminderInterval] ?? "\(Int(reminderInterval)) min")")
                         // Save settings
                         hydrationManager.updateDailyGoal(to: dailyGoal)
                         hydrationManager.updateReminderInterval(to: reminderInterval * 60) // Convert to seconds
@@ -165,6 +175,7 @@ struct SettingsView: View {
             .alert("Notification Permission Required", isPresented: $showNotificationAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Settings") {
+                    hydrationManager.logUserAction(action: "Open System Notifications Settings")
                     // Open system settings app
                     if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
                         NSWorkspace.shared.open(url)
