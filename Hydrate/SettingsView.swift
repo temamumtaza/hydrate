@@ -127,6 +127,13 @@ struct SettingsView: View {
                 
                 Spacer()
                 
+                // Add Quit App button
+                Button("Quit App") {
+                    NSApplication.shared.terminate(self)
+                }
+                .buttonStyle(ConsistentButtonStyle(color: .red, isSmall: true))
+                .padding(.bottom, 10)
+                
                 HStack {
                     Button("Cancel") {
                         presentationMode.wrappedValue.dismiss()

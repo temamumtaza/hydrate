@@ -121,13 +121,6 @@ struct PopoverView: View {
                 }
                 .font(.caption)
                 
-                // Test notification button
-                Button("Test Notification") {
-                    hydrationManager.triggerNotification()
-                }
-                .buttonStyle(ConsistentButtonStyle(color: accentColor, isSmall: true))
-                .padding(.top, 5)
-                
                 Spacer()
                 
                 // Bottom buttons
