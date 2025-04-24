@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 struct SettingsView: View {
     @ObservedObject var hydrationManager: HydrationManager
@@ -141,8 +142,8 @@ struct SettingsView: View {
                     
                     // Quit button in the middle
                     Button("Quit App") {
-                        let appDelegate = NSApp.delegate
-                        NSApp.terminate(appDelegate)
+                        // Using a more direct method to quit the app even in debug mode
+                        exit(0)
                     }
                     .buttonStyle(ConsistentButtonStyle(color: .red))
                     
@@ -161,7 +162,7 @@ struct SettingsView: View {
             .padding()
             .background(secondaryColor)
             .cornerRadius(12)
-            .frame(minWidth: 350, minHeight: 400)
+            .frame(width: 300, height: 400) // Match PopoverView dimensions
             .alert("Notification Permission Required", isPresented: $showNotificationAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Settings") {
