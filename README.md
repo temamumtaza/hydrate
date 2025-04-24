@@ -19,7 +19,7 @@ Hydrate is a simple macOS menu bar application that helps you remember to drink 
 
 ## Building the App
 
-1. Clone this repository
+1. Clone this repository: `git clone https://github.com/temamumtaza/hydrate.git`
 2. Open `Hydrate.xcodeproj` in Xcode
 3. Select your development team in the Signing & Capabilities tab
 4. Build and run the app (⌘R)
@@ -31,6 +31,15 @@ Hydrate is a simple macOS menu bar application that helps you remember to drink 
 3. Use the quick add buttons to log your water intake
 4. Access settings to customize your daily goal and reminder frequency
 5. The app will notify you at your set intervals to remind you to drink water
+
+## Project Structure
+
+The app follows a simple architecture:
+- `HydrateApp.swift` - The main app entry point
+- `StatusBarController.swift` - Manages the menu bar icon and interaction
+- `HydrationManager.swift` - Core data management for hydration tracking
+- `PopoverView.swift` - Main UI for tracking water intake
+- `SettingsView.swift` - Settings interface for customization
 
 ## License
 
