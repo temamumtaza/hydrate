@@ -46,82 +46,87 @@ struct SettingsView: View {
                     .foregroundColor(textColor)
                     .padding(.top)
                 
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Daily Water Goal")
-                        .font(.headline)
-                        .foregroundColor(textColor)
-                    
-                    HStack {
-                        Slider(value: $dailyGoal, in: 500...5000, step: 100)
-                            .accentColor(accentColor)
-                        HStack(spacing: 0) {
-                            Text("\(Int(dailyGoal))")
+                ScrollView {
+                    VStack(spacing: 20) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Daily Water Goal")
+                                .font(.headline)
                                 .foregroundColor(textColor)
-                                .frame(width: 50, alignment: .trailing)
                             
-                            Text(" ml")
-                                .foregroundColor(secondaryTextColor)
-                                .frame(width: 20, alignment: .leading)
-                        }
-                        .frame(width: 70)
-                    }
-                    
-                    Text("Recommended: 2000-3000 ml per day")
-                        .font(.caption)
-                        .foregroundColor(secondaryTextColor)
-                }
-                .padding(.horizontal)
-                
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Reminder Interval")
-                        .font(.headline)
-                        .foregroundColor(textColor)
-                    
-                    Picker("Remind me every:", selection: $reminderInterval) {
-                        ForEach(Array(reminderIntervals.keys).sorted(), id: \.self) { minutes in
-                            Text(reminderIntervals[minutes] ?? "\(Int(minutes)) min").tag(minutes)
-                        }
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .labelsHidden()
-                    .accentColor(accentColor)
-                    
-                    // Display next reminder time
-                    HStack {
-                        Text("Next reminder in:")
-                            .foregroundColor(secondaryTextColor)
-                        Text(hydrationManager.formattedTimeRemaining())
-                            .bold()
-                            .foregroundColor(textColor)
-                            .onReceive(timer) { _ in
-                                // Update timer display
+                            HStack {
+                                Slider(value: $dailyGoal, in: 500...5000, step: 100)
+                                    .accentColor(accentColor)
+                                HStack(spacing: 0) {
+                                    Text("\(Int(dailyGoal))")
+                                        .foregroundColor(textColor)
+                                        .frame(width: 50, alignment: .trailing)
+                                    
+                                    Text(" ml")
+                                        .foregroundColor(secondaryTextColor)
+                                        .frame(width: 20, alignment: .leading)
+                                }
+                                .frame(width: 70)
                             }
-                    }
-                    .font(.caption)
-                    .padding(.top, 4)
-                    
-                    Text("How often you want to be reminded to drink water")
-                        .font(.caption)
-                        .foregroundColor(secondaryTextColor)
-                }
-                .padding(.horizontal)
-                
-                // Test notification button
-                HStack {
-                    Button("Test Notification") {
-                        if hydrationManager.isNotificationAuthorized {
-                            hydrationManager.triggerNotification()
-                        } else {
-                            showNotificationAlert = true
+                            
+                            Text("Recommended: 2000-3000 ml per day")
+                                .font(.caption)
+                                .foregroundColor(secondaryTextColor)
                         }
-                    }
-                    .buttonStyle(ConsistentButtonStyle(color: accentColor, isSmall: true))
-                    .padding(.top, 5)
-                    
-                    if !hydrationManager.isNotificationAuthorized {
-                        Image(systemName: "exclamationmark.triangle")
-                            .foregroundColor(.orange)
-                            .font(.footnote)
+                        .padding(.horizontal)
+                        
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Reminder Interval")
+                                .font(.headline)
+                                .foregroundColor(textColor)
+                            
+                            Picker("Remind me every:", selection: $reminderInterval) {
+                                ForEach(Array(reminderIntervals.keys).sorted(), id: \.self) { minutes in
+                                    Text(reminderIntervals[minutes] ?? "\(Int(minutes)) min").tag(minutes)
+                                }
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                            .labelsHidden()
+                            .accentColor(accentColor)
+                            
+                            // Display next reminder time
+                            HStack {
+                                Text("Next reminder in:")
+                                    .foregroundColor(secondaryTextColor)
+                                Text(hydrationManager.formattedTimeRemaining())
+                                    .bold()
+                                    .foregroundColor(textColor)
+                                    .onReceive(timer) { _ in
+                                        // Update timer display
+                                    }
+                            }
+                            .font(.caption)
+                            .padding(.top, 4)
+                            
+                            Text("How often you want to be reminded to drink water")
+                                .font(.caption)
+                                .foregroundColor(secondaryTextColor)
+                        }
+                        .padding(.horizontal)
+                        
+                        // Test notification button
+                        HStack {
+                            Button("Test Notification") {
+                                if hydrationManager.isNotificationAuthorized {
+                                    hydrationManager.triggerNotification()
+                                } else {
+                                    showNotificationAlert = true
+                                }
+                            }
+                            .buttonStyle(ConsistentButtonStyle(color: accentColor, isSmall: true))
+                            .padding(.top, 5)
+                            
+                            if !hydrationManager.isNotificationAuthorized {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .foregroundColor(.orange)
+                                    .font(.footnote)
+                            }
+                        }
+                        .padding(.horizontal)
                     }
                 }
                 
@@ -129,7 +134,7 @@ struct SettingsView: View {
                 
                 // Add Quit App button
                 Button("Quit App") {
-                    NSApplication.shared.terminate(self)
+                    NSApplication.shared.terminate(nil)
                 }
                 .buttonStyle(ConsistentButtonStyle(color: .red, isSmall: true))
                 .padding(.bottom, 10)
@@ -155,7 +160,7 @@ struct SettingsView: View {
             .padding()
             .background(secondaryColor)
             .cornerRadius(12)
-            .frame(width: 350, height: 400)
+            .frame(minWidth: 350, minHeight: 400)
             .alert("Notification Permission Required", isPresented: $showNotificationAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Settings") {
